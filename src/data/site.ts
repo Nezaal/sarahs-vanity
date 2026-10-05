@@ -23,8 +23,8 @@ export const SITE = {
   name: "Sarah's Vanity",
   kind: "Ladies Beauty Parlour",
   tagline: "Hair, skin and bridal care in a calm, ladies-only space.",
-  phoneDisplay: "+91 9971698891",
-  phoneHref: "tel:+919971698891",
+  phoneDisplay: "+91 9667345453",
+  phoneHref: "tel:+919667345453",
   // wa.me wants the full international number: country code, no "+" or spaces
   whatsappNumber: "9667345453",
   instagramHandle: "@sarahs_vanity01",
