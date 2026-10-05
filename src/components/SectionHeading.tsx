@@ -1,20 +1,24 @@
-import type { ReactNode } from "react";
+import Eyebrow from "@/components/Eyebrow";
+import RevealText, { type TextPart } from "@/components/motion/RevealText";
 
 interface SectionHeadingProps {
   eyebrow: string;
-  children: ReactNode;
+  /** headline text; `{ em }` runs are set in italic */
+  parts: TextPart[];
+  /** on a dark background: rose gold label, foil italics */
+  dark?: boolean;
 }
 
-export default function SectionHeading({ eyebrow, children }: SectionHeadingProps) {
+export default function SectionHeading({ eyebrow, parts, dark = false }: SectionHeadingProps) {
   return (
     <header>
-      <p className="flex items-center gap-3 text-[0.7rem] font-normal uppercase tracking-[0.35em] text-gold">
-        <span className="h-px w-8 bg-gold" aria-hidden="true" />
-        {eyebrow}
-      </p>
-      <h2 className="mt-4 font-display text-[2.6rem] leading-[1.05] tracking-tight md:text-6xl">
-        {children}
-      </h2>
+      <Eyebrow dark={dark}>{eyebrow}</Eyebrow>
+      <RevealText
+        as="h2"
+        parts={parts}
+        className="type-display mt-5 text-[clamp(2.75rem,12.5vw,5rem)]"
+        emClassName={dark ? "foil-text" : "text-rose"}
+      />
     </header>
   );
 }

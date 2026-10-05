@@ -1,6 +1,7 @@
 // Built using Hyperiux Vault: https://vault.hyperiux.com
-// Adapted for Sarah's Vanity: cards, copy and colours come in as props, and a
-// card without a photo renders as a tinted, labelled tile.
+// Adapted for Sarah's Vanity: cards, copy and colours come in as props, a
+// card without a photo renders as a tinted, labelled tile, and the cluster
+// deals itself in once `ready` flips.
 
 import {
   motion,
@@ -22,6 +23,19 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 const SCATTER_START = 0.12;
 const SCATTER_END = 0.9;
 
+// Takes the steps out of wheel and keyboard scrolling, and gives a dragged
+// finger a little weight. Overdamped, so it never overshoots.
+const PROGRESS_SPRING = { stiffness: 150, damping: 28, mass: 0.35 };
+
+// Phone browsers report a taller viewport (vh) than they show while their
+// toolbars are out (svh). Anything that must be on screen before the first
+// scroll is placed with svh, falling back to vh where svh is unknown.
+const SVH = typeof CSS !== "undefined" && CSS.supports("height", "1svh") ? "svh" : "vh";
+
+// Where the clustered pile sits, relative to the stage's true centre: a touch
+// above the middle of the visible screen. Eases to zero as the cards spread.
+const REST_LIFT = `(47${SVH} - 50vh)`;
+
 const PARALLAX_X = 2.6;
 const PARALLAX_Y = 2.2;
 const PARALLAX_SPRING = { stiffness: 90, damping: 22, mass: 0.6 };
@@ -36,10 +50,10 @@ const RESPONSIVE = {
     card: null as { w: number; h: number } | null,
   },
   small: {
-    scale: 0.85,
+    scale: 1,
     small: true,
-    colX: 22,
-    card: { w: 40, h: 20 },
+    colX: 23,
+    card: { w: 44, h: 18 },
   },
 };
 
@@ -97,9 +111,12 @@ function usePointerParallax(active: boolean, enabled: boolean) {
 export interface StackSpreadItem {
   /** photo url; when omitted the card shows `tone` + `label` instead */
   src?: string;
+  /** responsive candidates for `src`, as `<img srcset>` / `<img sizes>` */
+  srcSet?: string;
+  sizes?: string;
   alt?: string;
   label?: string;
-  /** any CSS background, used when there is no photo */
+  /** any CSS background, used when there is no photo (and while one loads) */
   tone?: string;
   /** label colour on a tinted card */
   ink?: string;
@@ -129,7 +146,11 @@ export interface StackSpreadCard {
 
 interface CardProps {
   card: StackSpreadCard;
+  /** position in the deal, back of the pile first */
+  order: number;
   progress: MotionValue<number>;
+  /** deal the card in; until then it waits off-stage */
+  ready: boolean;
   reduce: boolean | null;
   clusterRotation: boolean;
   /** uniform rest-scale for every card; null = use each card's own scale */
@@ -147,7 +168,9 @@ interface CardProps {
 
 function Card({
   card,
+  order,
   progress,
+  ready,
   reduce,
   clusterRotation,
   scaleMul,
@@ -185,7 +208,7 @@ function Card({
       const drift = depth * p;
       const dx = tx - px * PARALLAX_X * drift;
       const dy = ty - py * PARALLAX_Y * drift;
-      return `calc(-50% + ${dx}vw) calc(-50% + ${dy}vh)`;
+      return `calc(-50% + ${dx}vw) calc(-50% + ${dy}vh + ${1 - p} * ${REST_LIFT})`;
     },
   );
   const rotate = useTransform(progress, [0, 1], [stackRotate, endRotate]);
@@ -203,7 +226,15 @@ function Card({
         scale,
       }}
     >
-      <CardFace item={item} cardRadius={cardRadius} />
+      {/* the deal: its own layer, so it never fights the scroll transforms */}
+      <motion.div
+        className="h-full w-full"
+        initial={flat ? false : { opacity: 0, y: "55%", rotate: order % 2 ? 12 : -12, scale: 0.84 }}
+        animate={ready ? { opacity: 1, y: "0%", rotate: 0, scale: 1 } : undefined}
+        transition={{ type: "spring", stiffness: 110, damping: 17, delay: 0.1 + order * 0.07 }}
+      >
+        <CardFace item={item} cardRadius={cardRadius} />
+      </motion.div>
     </motion.div>
   );
 }
@@ -216,14 +247,17 @@ interface CardFaceProps {
 function CardFace({ item, cardRadius }: CardFaceProps) {
   return (
     <div
-      className="relative h-full w-full overflow-hidden shadow-[0_10px_30px_-12px_rgba(58,28,42,0.35)] max-md:rounded-[4vw]"
+      className="relative h-full w-full overflow-hidden shadow-[0_14px_34px_-14px_rgba(58,28,42,0.45)] max-md:rounded-[4vw]"
       style={{ borderRadius: `${cardRadius}px`, background: item.tone }}
     >
       {item.src ? (
         <>
           <img
             src={item.src}
+            srcSet={item.srcSet}
+            sizes={item.sizes}
             alt={item.alt ?? item.label ?? ""}
+            decoding="async"
             draggable={false}
             className="absolute inset-0 h-full w-full object-cover"
           />
@@ -262,14 +296,34 @@ function CardFace({ item, cardRadius }: CardFaceProps) {
   );
 }
 
+function ScrollCue() {
+  return (
+    <div
+      className="flex flex-col items-center gap-2 text-[0.6rem] font-medium uppercase tracking-[0.32em]"
+      aria-hidden="true"
+    >
+      <span>Scroll</span>
+      <span className="relative block h-7 w-px overflow-hidden bg-current/20">
+        <span className="absolute inset-0 animate-cue bg-current" />
+      </span>
+    </div>
+  );
+}
+
 export interface StackSpreadProps {
   cards: StackSpreadCard[];
   /** shown above the cluster before the scatter, fades out as it starts */
   intro?: ReactNode;
+  /** shown below the cluster before the scatter (a call to action, say) */
+  footer?: ReactNode;
+  /** ornament behind the cluster; fades out as the cards spread */
+  backdrop?: ReactNode;
   /** centre headline revealed once the cards spread */
   heading: ReactNode;
   subtitle?: string;
   id?: string;
+  /** deal the cards in; hold at false while an intro covers the page */
+  ready?: boolean;
   /** scatter scroll distance, in vh */
   scrollLength?: number;
   bgColor?: string;
@@ -283,16 +337,19 @@ export interface StackSpreadProps {
   textColor?: string;
   /** scroll progress (0-1) where the centre text starts fading in */
   textFadeStart?: number;
-  /** show the "scroll to spread" hint at the bottom until the scatter begins */
+  /** show the scroll cue at the bottom until the scatter begins */
   showScrollHint?: boolean;
 }
 
 export default function StackSpread({
   cards,
   intro,
+  footer,
+  backdrop,
   heading,
   subtitle,
   id,
+  ready = true,
   scrollLength = 350,
   bgColor = "#ececeb",
   clusterRotation = true,
@@ -311,10 +368,11 @@ export default function StackSpread({
     target: wrapRef,
     offset: ["start start", "end end"],
   });
+  const travel = useSpring(scrollYProgress, PROGRESS_SPRING);
 
   // hold, scatter, then settle
   const progress = useTransform(
-    scrollYProgress,
+    travel,
     [0, SCATTER_START, SCATTER_END, 1],
     [0, 0, 1, 1],
   );
@@ -332,9 +390,17 @@ export default function StackSpread({
   const copyOpacity = useTransform(progress, [textFadeStart, textFadeStart + 0.35], [0, 1]);
   const copyScale = useTransform(progress, [textFadeStart, 0.9], [0.85, 1]);
 
-  // intro + scroll hint: visible while clustered, gone once the scatter is under way
+  // intro, footer and backdrop: there while clustered, gone once the scatter is under way
   const hintOpacity = useTransform(scrollYProgress, [0, SCATTER_START], [1, 0]);
   const introOpacity = useTransform(progress, [0, 0.18], [1, 0]);
+  const backdropOpacity = useTransform(progress, [0, 0.45], [1, 0]);
+  const backdropScale = useTransform(progress, [0, 0.45], [1, 1.3]);
+
+  // the footer can hold links, so it must stop taking taps once it has faded
+  const [atRest, setAtRest] = useState(true);
+  useMotionValueEvent(scrollYProgress, "change", (p) => {
+    setAtRest(p < SCATTER_START * 0.6);
+  });
 
   return (
     <section
@@ -344,11 +410,21 @@ export default function StackSpread({
       style={{ height: `${scrollLength}vh`, backgroundColor: bgColor }}
     >
       <div className="sticky top-0 h-screen w-full overflow-hidden">
+        {/* ornament, behind the cluster */}
+        {backdrop && (
+          <motion.div
+            className="pointer-events-none absolute left-1/2 z-0 -translate-x-1/2 -translate-y-1/2"
+            style={{ top: `47${SVH}`, opacity: backdropOpacity, scale: noScale ? 1 : backdropScale }}
+          >
+            {backdrop}
+          </motion.div>
+        )}
+
         {/* intro, above the cluster */}
         {intro && (
           <motion.div
-            className="pointer-events-none absolute inset-x-0 top-[7vh] z-20 flex flex-col items-center px-6 text-center"
-            style={{ color: textColor, opacity: introOpacity }}
+            className="pointer-events-none absolute inset-x-0 z-20 flex flex-col items-center px-6 text-center"
+            style={{ top: `max(4.5${SVH}, 1.75rem)`, color: textColor, opacity: introOpacity }}
           >
             {intro}
           </motion.div>
@@ -362,16 +438,18 @@ export default function StackSpread({
             scale: noScale ? 1 : copyScale,
           }}
         >
+          {/* on phones the headline lives in the gap between the photo rows,
+              so on short screens it shrinks with the height to stay inside it */}
           <h2
-            className="w-full font-display text-[4.8vw] font-normal leading-none! tracking-tight max-md:text-[10.5vw]"
+            className="type-display w-full text-[4.8vw] max-md:text-[min(11.5vw,calc(12.6vh-35px))]"
             style={{ color: textColor }}
           >
             {heading}
           </h2>
           {subtitle && (
             <p
-              className="mt-[1.2vw] w-full max-w-[38ch] text-[1.15vw] leading-relaxed max-md:mt-3 max-md:text-[3.7vw]"
-              style={{ color: textColor, opacity: 0.7 }}
+              className="mt-[1.2vw] w-full max-w-[38ch] text-[1.15vw] leading-relaxed max-md:mt-3 max-md:text-[3.9vw] max-md:leading-snug"
+              style={{ color: textColor, opacity: 0.75 }}
             >
               {subtitle}
             </p>
@@ -384,7 +462,9 @@ export default function StackSpread({
             <Card
               key={i}
               card={card}
+              order={i}
               progress={progress}
+              ready={ready}
               reduce={reduce}
               clusterRotation={clusterRotation}
               scaleMul={scaleMul}
@@ -399,27 +479,15 @@ export default function StackSpread({
           ))}
         </div>
 
-        {/* scroll hint */}
-        {showScrollHint && (
+        {/* footer + scroll cue, pinned to the bottom of the visible screen */}
+        {(footer || showScrollHint) && (
           <motion.div
-            className="pointer-events-none absolute inset-x-0 bottom-[3vh] z-20 flex flex-col items-center gap-[0.6vh] text-[0.8vw] font-medium uppercase tracking-[0.2em] max-md:bottom-6 max-md:gap-1 max-md:text-[2.8vw]"
-            style={{ color: textColor, opacity: hintOpacity }}
+            inert={!atRest}
+            className="absolute inset-x-0 z-20 flex -translate-y-full flex-col items-center gap-4 px-6 pb-4"
+            style={{ top: `100${SVH}`, color: textColor, opacity: hintOpacity }}
           >
-            <span>Scroll</span>
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="animate-bounce max-md:h-[4vw] max-md:w-[4vw]"
-              aria-hidden="true"
-            >
-              <path d="m6 9 6 6 6-6" />
-            </svg>
+            {footer}
+            {showScrollHint && <ScrollCue />}
           </motion.div>
         )}
       </div>

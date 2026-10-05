@@ -7,17 +7,188 @@
   --color-blush: #e6c9c2;
   --color-rose: #b4706d;
   --color-plum: #3a1c2a;
+  --color-night: #1e0f17;
   --color-ink: #2a1a20;
   --color-gold: #a98549;
+  /* gold, darkened until small labels stay readable on cream */
+  --color-bronze: #896637;
   --color-rosegold: #dcae96;
 
-  --font-display: "Cormorant Garamond", "Times New Roman", serif;
-  --font-sans: "Jost", system-ui, sans-serif;
+  --font-display: "Fraunces Variable", "Iowan Old Style", "Times New Roman", serif;
+  --font-sans: "Jost Variable", system-ui, sans-serif;
+
+  --ease-silk: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --animate-turn: turn 28s linear infinite;
+  --animate-turn-slow: turn 120s linear infinite;
+  --animate-twinkle: twinkle 3.4s ease-in-out infinite;
+  --animate-foil: foil 9s linear infinite;
+  --animate-cue: cue 2.4s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+  --animate-shine: shine 5s ease-in-out infinite;
+  --animate-halo: halo 2.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+
+  @keyframes turn {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  @keyframes twinkle {
+    0%,
+    100% {
+      opacity: 0.2;
+      transform: scale(0.55) rotate(0deg);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1) rotate(45deg);
+    }
+  }
+  /* one full gradient width, so the loop has no seam */
+  @keyframes foil {
+    to {
+      background-position: 200% 50%;
+    }
+  }
+  @keyframes cue {
+    0% {
+      transform: translateY(-100%);
+    }
+    60%,
+    100% {
+      transform: translateY(100%);
+    }
+  }
+  @keyframes shine {
+    0%,
+    55% {
+      transform: translateX(-140%) skewX(-18deg);
+    }
+    100% {
+      transform: translateX(440%) skewX(-18deg);
+    }
+  }
+  @keyframes halo {
+    0% {
+      opacity: 0.5;
+      transform: scale(1);
+    }
+    80%,
+    100% {
+      opacity: 0;
+      transform: scale(1.75);
+    }
+  }
 }
+
+/* --- Type ---------------------------------------------------------------- */
+
+/* Big serif headlines. Size comes from a text-* utility alongside. */
+@utility type-display {
+  font-family: var(--font-display);
+  font-weight: 300;
+  /* the high-contrast display cut, whatever the size */
+  font-variation-settings: "opsz" 144;
+  letter-spacing: -0.028em;
+  line-height: 0.98;
+  text-wrap: balance;
+}
+
+/* Small serif titles, where the display cut would get too thin. */
+@utility type-title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.015em;
+}
+
+@utility type-eyebrow {
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.32em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+@utility type-button {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+/* --- Rose-gold foil ------------------------------------------------------ */
+
+@utility foil-fill {
+  background-image: linear-gradient(
+    100deg,
+    #c69479 0%,
+    #f7dfcf 20%,
+    #dcae96 42%,
+    #b07b61 60%,
+    #f3d6c2 80%,
+    #c69479 100%
+  );
+  background-size: 200% 100%;
+}
+
+/* Foil as the text colour. The padding gives italic overhangs and descenders
+   room inside the clipped background; the margin hands the space back. */
+@utility foil-text {
+  background-image: linear-gradient(
+    100deg,
+    #c69479 0%,
+    #f7dfcf 20%,
+    #dcae96 42%,
+    #b07b61 60%,
+    #f3d6c2 80%,
+    #c69479 100%
+  );
+  background-size: 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  padding: 0.1em 0.14em 0.22em;
+  margin: -0.1em -0.14em -0.22em;
+}
+
+/* --- Shapes and texture -------------------------------------------------- */
+
+/* Round-topped frame for a 3:4 box. The top is a true half circle: its
+   vertical radius is half the width, written as a share of the height. (One
+   huge radius would not do: the browser scales every corner down together,
+   which squares off the feet.) */
+@utility arch {
+  border-radius: 50% 50% 1.5rem 1.5rem / 37.5% 37.5% 1.5rem 1.5rem;
+}
+
+/* Clips one word of a headline so it can rise into place. Padding/margin as
+   in foil-text: room for italics without changing the layout. */
+@utility word-mask {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  padding: 0.14em 0.12em 0.24em;
+  margin: -0.14em -0.12em -0.24em;
+}
+
+@utility grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .6 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+}
+
+/* --- Base ---------------------------------------------------------------- */
 
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
+  /* clip, not hidden: hidden would turn the page into a scroll container and
+     break the sticky hero and service cards */
+  overflow-x: clip;
 }
 
 /* Lenis drives anchor scrolling when active; avoid double easing. */
@@ -25,24 +196,53 @@ html.lenis {
   scroll-behavior: auto;
 }
 
+/* held still while the intro plays */
+html.is-loading {
+  overflow: hidden;
+}
+
 body {
   background-color: var(--color-cream);
   color: var(--color-ink);
   font-family: var(--font-sans);
   font-weight: 300;
+  overflow-x: clip;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+a,
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-rose);
+  outline-offset: 3px;
 }
 
 section[id] {
-  scroll-margin-top: 4rem;
+  scroll-margin-top: 4.5rem;
 }
 
 ::selection {
   background-color: var(--color-blush);
+  color: var(--color-plum);
 }
 
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
   }
 }

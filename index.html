@@ -5,18 +5,40 @@
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#f7f0ea" />
+    <meta name="theme-color" content="#1e0f17" />
     <meta
       name="description"
-      content="Sarah's Vanity — a ladies beauty parlour for hair, skin, bridal makeup, nails and henna."
+      content="Sarah's Vanity — a ladies beauty parlour for hair, skin, bridal makeup, hands & feet care and henna."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Sarah's Vanity — Ladies Beauty Parlour" />
+    <meta
+      property="og:description"
+      content="Hair, skin and bridal care in a calm, ladies-only space."
     />
     <title>Sarah's Vanity — Ladies Beauty Parlour</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Jost:wght@300;400;500&display=swap"
-      rel="stylesheet"
-    />
+    <link rel="preload" as="image" href="/emblem.webp" type="image/webp" />
+    <!--
+      Before the app boots, paint the screen (and, via theme-color above, the
+      phone's status bar) the colour of the opening curtain, so it never
+      flashes cream first. Tabs that have already seen the intro skip it and
+      go straight to cream. Key and colours match src/lib/intro.ts.
+    -->
+    <script>
+      try {
+        if (sessionStorage.getItem("sv:intro-seen") === "1") {
+          document.documentElement.classList.add("intro-seen");
+          document.querySelector('meta[name="theme-color"]').setAttribute("content", "#f7f0ea");
+        }
+      } catch (e) {}
+    </script>
+    <style>
+      html:not(.intro-seen) #root:empty {
+        position: fixed;
+        inset: 0;
+        background: #1e0f17;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>

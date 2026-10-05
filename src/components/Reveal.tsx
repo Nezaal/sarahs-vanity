@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 import type { ReactNode } from "react";
+import { EASE_SILK, IN_VIEW } from "@/lib/motion";
 
 interface RevealProps {
   children: ReactNode;
@@ -13,10 +14,10 @@ export default function Reveal({ children, className, delay = 0 }: RevealProps) 
   return (
     <motion.div
       className={className}
-      initial={{ opacity: 0, y: 24 }}
+      initial={{ opacity: 0, y: 28 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-10% 0px" }}
-      transition={{ duration: 0.8, delay, ease: [0.22, 1, 0.36, 1] }}
+      viewport={IN_VIEW}
+      transition={{ duration: 0.9, delay, ease: EASE_SILK }}
     >
       {children}
     </motion.div>

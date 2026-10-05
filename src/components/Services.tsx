@@ -1,65 +1,68 @@
+import { useScroll } from "motion/react";
+import { useRef } from "react";
+import CtaLink from "@/components/CtaLink";
 import Reveal from "@/components/Reveal";
 import SectionHeading from "@/components/SectionHeading";
-import ServiceIcon from "@/components/ServiceIcon";
-import { SERVICES, SITE } from "@/data/site";
+import ServiceCard from "@/components/ServiceCard";
+import { SERVICES, SITE, whatsappUrl } from "@/data/site";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 
-const CARD = [
-  "h-full rounded-2xl border border-cream/15 p-7 backdrop-blur-sm",
-  "bg-[radial-gradient(120%_90%_at_0%_0%,rgba(247,240,234,0.16),rgba(247,240,234,0.05))]",
-  "transition duration-300 ease-out",
-  "hover:-translate-y-1 hover:border-rosegold/70 hover:shadow-[0_20px_45px_-20px_rgba(220,174,150,0.55)]",
-].join(" ");
+// On phones each card sticks just below the nav, one sliver lower than the
+// last, so the pile shows an edge for every card already read.
+const STICK_BELOW_NAV = "4.75rem";
+const SLIVER_REM = 0.5;
 
 export default function Services() {
-  return (
-    <section id="services" className="bg-plum px-6 py-20 text-cream md:py-32">
-      <div className="mx-auto max-w-5xl">
-        <Reveal>
-          <SectionHeading eyebrow="Services">
-            Everything, <em>head to toe.</em>
-          </SectionHeading>
-          <p className="mt-5 max-w-md text-[1.05rem] leading-relaxed text-cream/70">
-            A look at what we do. Call or message us for prices and bridal packages.
-          </p>
-        </Reveal>
+  const listRef = useRef<HTMLOListElement>(null);
+  const wide = useMediaQuery("(min-width: 1024px)");
+  const { scrollYProgress } = useScroll({ target: listRef, offset: ["start start", "end end"] });
 
-        <ul className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+  return (
+    // no overflow clipping on this section: it would stop the cards sticking
+    <section
+      id="services"
+      className="relative z-10 -mt-10 rounded-t-[2.5rem] bg-plum px-3 pb-28 pt-20 text-cream md:px-6 md:pb-36 md:pt-28"
+    >
+      <div
+        className="grain pointer-events-none absolute inset-0 rounded-t-[2.5rem] opacity-[0.06]"
+        aria-hidden="true"
+      />
+
+      <div className="relative mx-auto max-w-5xl">
+        <div className="px-3">
+          <SectionHeading dark eyebrow="Services" parts={["Everything, ", { em: "head to toe." }]} />
+          <Reveal delay={0.2}>
+            <p className="mt-6 max-w-md text-[1.08rem] leading-relaxed text-cream/75">
+              A look at what we do. Call or message us for prices and bridal packages.
+            </p>
+          </Reveal>
+        </div>
+
+        <ol ref={listRef} className="mt-12 lg:grid lg:grid-cols-3 lg:gap-5">
           {SERVICES.map((group, i) => (
-            <li key={group.title}>
-              {/* hover lift sits on the inner card so it doesn't fight Reveal's transform */}
-              <Reveal delay={(i % 3) * 0.08} className="h-full">
-                <article className={CARD}>
-                  <ServiceIcon name={group.icon} className="h-9 w-9 text-rosegold" />
-                  <p className="mt-5 text-[0.65rem] font-normal uppercase tracking-[0.3em] text-rosegold">
-                    {group.note}
-                  </p>
-                  <h3 className="mt-2 font-display text-3xl">{group.title}</h3>
-                  <ul className="mt-5 space-y-2.5 border-t border-rosegold/35 pt-5 text-[0.95rem] text-cream/85">
-                    {group.items.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                </article>
-              </Reveal>
+            <li
+              key={group.title}
+              className="sticky mb-5 last:mb-0 lg:static lg:mb-0"
+              style={{ top: `calc(${STICK_BELOW_NAV} + ${i * SLIVER_REM}rem)` }}
+            >
+              <ServiceCard
+                group={group}
+                index={i}
+                total={SERVICES.length}
+                progress={scrollYProgress}
+                stacked={!wide}
+              />
             </li>
           ))}
-        </ul>
+        </ol>
 
-        <Reveal className="mt-14 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
-          <a
-            href={SITE.phoneHref}
-            className="rounded-full bg-rosegold px-8 py-4 text-center text-xs font-medium uppercase tracking-[0.25em] text-plum transition-colors hover:bg-cream"
-          >
+        <Reveal className="mt-14 flex flex-col items-stretch gap-3 px-3 sm:flex-row sm:justify-center">
+          <CtaLink href={SITE.phoneHref} icon="phone">
             Call to book
-          </a>
-          <a
-            href={SITE.whatsappHref}
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-full border border-rosegold/60 px-8 py-4 text-center text-xs font-medium uppercase tracking-[0.25em] text-rosegold transition-colors hover:border-rosegold hover:bg-rosegold/10"
-          >
+          </CtaLink>
+          <CtaLink href={whatsappUrl()} variant="outline" icon="whatsapp" className="text-rosegold">
             WhatsApp us
-          </a>
+          </CtaLink>
         </Reveal>
       </div>
     </section>
