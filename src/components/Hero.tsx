@@ -19,10 +19,13 @@ const CARD_SIZES = "(pointer: coarse) 40vw, 26vw";
 // A card with a photo. Drop the photo (see StackSpreadItem) and the card
 // falls back to its tinted, labelled tile.
 function photoCard(photo: Photo, label: string, tone: string, ink: string): StackSpreadItem {
+  const [width, height] = photo.sizes[photo.sizes.length - 1];
   return {
     src: photoSrc(photo),
     srcSet: photoSrcSet(photo),
     sizes: CARD_SIZES,
+    width,
+    height,
     alt: photo.alt,
     label,
     tone,
@@ -89,7 +92,7 @@ const CARDS: StackSpreadCard[] = [
     z: 8,
   },
   {
-    item: photoCard(PHOTOS.bridal, "Bridal", "linear-gradient(155deg,#f4e3d7,#e6c9c2)", PLUM),
+    item: { ...photoCard(PHOTOS.bridal, "Bridal", "linear-gradient(155deg,#f4e3d7,#e6c9c2)", PLUM), priority: true },
     stackOffset: { x: 16, y: 12 },
     stackRotate: -7,
     target: { x: 30, y: 34, rotate: 0, scale: 0.9, w: 16, h: 20 },

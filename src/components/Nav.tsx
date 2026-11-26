@@ -47,7 +47,7 @@ export default function Nav({ heroId }: NavProps) {
               style={{ pathLength: scrollYProgress }}
             />
           </svg>
-          <img src="/emblem.webp" alt="" width={384} height={384} className="size-9 rounded-full" />
+          <img src="/emblem.webp" alt="" width={128} height={128} decoding="async" className="size-9 rounded-full" />
         </span>
         {/* the badge already carries the name, so the wordmark waits for wider screens */}
         <span className="type-title text-xl leading-none max-sm:sr-only">

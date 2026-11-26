@@ -1,5 +1,4 @@
 // All editable site content lives here.
-// TODO: replace the placeholder contact details below with the real ones.
 
 import type { PhotoName } from "@/data/photos";
 

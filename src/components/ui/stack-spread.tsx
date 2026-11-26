@@ -114,6 +114,9 @@ export interface StackSpreadItem {
   /** responsive candidates for `src`, as `<img srcset>` / `<img sizes>` */
   srcSet?: string;
   sizes?: string;
+  width?: number;
+  height?: number;
+  priority?: boolean;
   alt?: string;
   label?: string;
   /** any CSS background, used when there is no photo (and while one loads) */
@@ -256,7 +259,11 @@ function CardFace({ item, cardRadius }: CardFaceProps) {
             src={item.src}
             srcSet={item.srcSet}
             sizes={item.sizes}
+            width={item.width}
+            height={item.height}
             alt={item.alt ?? item.label ?? ""}
+            loading="eager"
+            fetchPriority={item.priority ? "high" : undefined}
             decoding="async"
             draggable={false}
             className="absolute inset-0 h-full w-full object-cover"

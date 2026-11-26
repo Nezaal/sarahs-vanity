@@ -7,8 +7,8 @@ import { EASE_CURTAIN, EASE_SILK } from "@/lib/motion";
 
 // The curtain stays down at least this long, so the ring can finish drawing,
 // and never longer than the cap, however slow the fonts are.
-const MIN_MS = 1900;
-const MAX_MS = 3500;
+const MIN_MS = 900;
+const MAX_MS = 1800;
 const REDUCED_MS = 300;
 
 // Every face the first screen is set in. Loaded by name: `document.fonts.ready`
@@ -97,12 +97,14 @@ export default function Preloader({ onDone }: PreloaderProps) {
               <motion.img
                 src="/emblem.webp"
                 alt={SITE.name}
-                width={384}
-                height={384}
+                width={128}
+                height={128}
+                loading="eager"
+                decoding="async"
                 className="absolute inset-3.5 size-[calc(100%-1.75rem)] rounded-full"
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 1.2, ease: EASE_SILK }}
+                transition={{ duration: 0.7, ease: EASE_SILK }}
               />
               <svg viewBox="0 0 100 100" className="absolute inset-0 -rotate-90" aria-hidden="true">
                 <defs>
@@ -122,18 +124,18 @@ export default function Preloader({ onDone }: PreloaderProps) {
                   strokeLinecap="round"
                   initial={{ pathLength: 0 }}
                   animate={{ pathLength: 1 }}
-                  transition={{ duration: 1.6, ease: [0.65, 0, 0.35, 1] }}
+                  transition={{ duration: 0.9, ease: [0.65, 0, 0.35, 1] }}
                 />
               </svg>
-              <Sparkle className="absolute -right-1 top-3 size-3 text-rosegold" delay={0.4} />
-              <Sparkle className="absolute -left-2 bottom-8 size-2 text-rosegold" delay={1.3} />
+              <Sparkle className="absolute -right-1 top-3 size-3 text-rosegold" delay={0.2} />
+              <Sparkle className="absolute -left-2 bottom-8 size-2 text-rosegold" delay={0.6} />
             </div>
 
             <motion.p
               className="type-eyebrow mt-8 text-rosegold"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.9, delay: 0.5, ease: EASE_SILK }}
+              transition={{ duration: 0.6, delay: 0.25, ease: EASE_SILK }}
             >
               {SITE.kind}
             </motion.p>

@@ -31,7 +31,7 @@ export default function Footer({ topId }: FooterProps) {
 
       <div className="relative mx-auto max-w-5xl">
         <div className="flex items-center justify-between">
-          <img src="/emblem.webp" alt="" width={384} height={384} loading="lazy" className="size-16 rounded-full" />
+          <img src="/emblem.webp" alt="" width={128} height={128} loading="lazy" decoding="async" className="size-16 rounded-full" />
           <a href={`#${topId}`} className="group flex items-center gap-3 text-rosegold">
             <span className="type-button">Back to top</span>
             <span className="grid size-11 place-items-center rounded-full border border-rosegold/40 transition-transform duration-300 ease-silk group-hover:-translate-y-1 group-active:scale-90">

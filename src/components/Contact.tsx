@@ -37,6 +37,10 @@ export default function Contact() {
       <div className="mx-auto max-w-5xl md:grid md:grid-cols-2 md:gap-16">
         <div>
           <SectionHeading eyebrow="Contact" parts={["Come ", { em: "visit us." }]} />
+          <p className="mt-6 max-w-md text-[1.02rem] leading-relaxed text-ink/70">
+            {SITE.name} is a ladies beauty parlour in Abul Fazal Enclave, Jamia Nagar, serving
+            Okhla and New Delhi.
+          </p>
 
           <dl className="mt-10 border-b border-plum/15">
             <Detail icon="pin" label="Address" delay={0}>

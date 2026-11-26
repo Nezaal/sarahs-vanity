@@ -33,7 +33,7 @@ export default function Services() {
           <SectionHeading dark eyebrow="Services" parts={["Everything, ", { em: "head to toe." }]} />
           <Reveal delay={0.2}>
             <p className="mt-6 max-w-md text-[1.08rem] leading-relaxed text-cream/75">
-              A look at what we do. Call or message us for prices and bridal packages.
+              Hair, skin, bridal makeup, threading, waxing, hands and feet, and henna — all in one ladies-only space in Abul Fazal Enclave, Jamia Nagar. Call or message us for prices and bridal packages.
             </p>
           </Reveal>
         </div>

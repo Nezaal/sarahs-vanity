@@ -1,5 +1,5 @@
 import { MotionConfig } from "motion/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import About from "@/components/About";
 import Booking from "@/components/Booking";
 import Contact from "@/components/Contact";
@@ -22,6 +22,17 @@ export default function App() {
   const [entered, setEntered] = useState(skipIntro);
 
   useSmoothScroll(!entered);
+
+  useEffect(() => {
+    if (!entered || !window.location.hash) return;
+    const id = decodeURIComponent(window.location.hash.slice(1));
+    const target = document.getElementById(id);
+    if (!target) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    requestAnimationFrame(() =>
+      target.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" }),
+    );
+  }, [entered]);
 
   return (
     // "user": anyone who has asked their device for less motion gets fades, not movement

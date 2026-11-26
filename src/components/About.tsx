@@ -34,7 +34,7 @@ const FEATURES: Feature[] = [
   },
   {
     icon: <Icon name="clock" className="size-5" />,
-    title: mainHours.days,
+    title: "Opening hours",
     text: `${[mainHours.time, ...otherHours.map((row) => `${row.days} ${row.time.toLowerCase()}`)].join(". ")}.`,
   },
 ];
@@ -122,7 +122,7 @@ export default function About({ id }: AboutProps) {
         <div className="mt-20 lg:col-start-2 lg:row-start-2 lg:mt-12">
           <ScrollWords
             className="type-title text-[1.6rem] leading-[1.32] text-plum md:text-[1.9rem]"
-            text="From a quick threading before work to the morning of the wedding, our customers return to us, and bring their mothers, sisters and friends along."
+            text="From a quick threading before work to the morning of the wedding, our customers return to us, and bring their mothers, sisters and friends along. Based in Abul Fazal Enclave, Jamia Nagar, near Okhla, New Delhi."
           />
 
           <ul className="mt-12 border-t border-plum/15">
